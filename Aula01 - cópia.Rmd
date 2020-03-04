@@ -1,0 +1,229 @@
+---
+title: "Aula 01"
+author: "Prof. Dr. José Roberto Frega"
+date: "03/03/2020"
+output: 
+  html_document: 
+    highlight: tango
+    number_sections: yes
+    theme: united
+    toc: yes
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE, warning = FALSE, comment = "")
+```
+# O R
+
+O *prompt* do R pode ser usado como uma calculadora, simplesmente inserindo os números e operações
+
+```{r}
+2 + 2
+5/4
+18^2
+18^2-3*32+125/15
+```
+
+Uma alternativa é usar uma variável para armazenar o resultado (observe que o R é sensível a maiúsculas e minúsculas)
+
+```{r}
+A = 18^2-3*32+125/15
+a
+A
+Frega = 1
+frega
+Frega
+```
+
+# Um pouco de estatística
+
+Tomemos os primeiros 10000 números naturais a partir do 1 (inteiros positivos)
+
+```{r}
+numeros = 1:10000
+#
+# Mostrarei somente os primeiros 10 e os últimos 10, por questão de espaço
+#
+head(numeros, 10)
+tail(numeros, 10)
+```
+
+## Média
+
+Para calcular a sua média, pode-se somá-los e dividir pelo número de elementos
+
+$$\mu = \dfrac{\sum_{i=1}^N x_i}{N}$$
+
+
+```{r}
+sum(numeros)/10000
+```
+
+Ou, simplesmente, usar a função *mean*
+
+```{r}
+mean(numeros)
+```
+
+## Desvio-padrão
+
+O desvio-padrão populacional pode ser calculado como
+
+$$\sigma = \sqrt{\dfrac{\sum_{i=1}^N \left(x_i-\mu\right)^2}{N}}$$ 
+
+```{r}
+sqrt(sum((numeros-mean(numeros))^2)/10000)
+```
+
+Vamos guardar esses resultados para posterior comparação
+
+```{r}
+pop.media = mean(numeros)
+pop.desvpad = sqrt(sum((numeros-mean(numeros))^2)/10000)
+c(pop.media, pop.desvpad)
+```
+
+## Amostragem
+
+Para uma amostra, o cálculo dos estimadores é 
+
+$$\bar{x} = \dfrac{\sum_{i=1}^n x_i}{n}$$
+
+$$s = \sqrt{\dfrac{\sum_{i=1}^n \left(x_i-\bar{x}\right)^2}{n-1}}$$ 
+
+onde $n$ é o tamanho da amostra.
+
+Dessa população de 10000 números, vamos tomar algumas amostras e calcular os seus estimadores (observe que usaremos a função *sd* que calcula o desvio-padrão amostral)
+
+## Estimadores amostrais
+
+```{r}
+# vou usar a função set.seed para inicializar o gerador de números aleatórios, assim teremos sempre as mesmas amostras, ou seja, os resultados serão replicáveis
+#
+set.seed(1)
+#
+amostra = sample(numeros, 30)
+c(mean(amostra), sd(amostra))
+amostra = sample(numeros, 30)
+c(mean(amostra), sd(amostra))
+amostra = sample(numeros, 30)
+c(mean(amostra), sd(amostra))
+```
+
+Comparando com a população:
+
+```{r}
+c(pop.media, pop.desvpad)
+```
+
+Se tomarmos amostras maiores, os estimadores estarão mais próximos dos parâmetros populacionais:
+
+```{r}
+amostra = sample(numeros, 130)
+c(mean(amostra), sd(amostra))
+amostra = sample(numeros, 130)
+c(mean(amostra), sd(amostra))
+amostra = sample(numeros, 130)
+c(mean(amostra), sd(amostra))
+c(pop.media, pop.desvpad)
+```
+
+```{r}
+amostra = sample(numeros, 500)
+c(mean(amostra), sd(amostra))
+amostra = sample(numeros, 500)
+c(mean(amostra), sd(amostra))
+amostra = sample(numeros, 500)
+c(mean(amostra), sd(amostra))
+c(pop.media, pop.desvpad)
+```
+
+# Jogos
+
+```{r}
+#
+# Este é um conjunto de funções que eu programei e que (ainda) não está disponível para vocês, ou seja, 
+# deste ponto em diante vocês não conseguirão executar o código
+#
+source("/Users/jfrega/Documents/R/LivroMQ1/jogo.R")
+```
+
+## Criando um jogo
+
+```{r}
+j = clsJogo()
+j$montaJogo(mm = c(1500, -800, 800, -400, 0, 0), coln = c("Fav", "Desf"))
+j$m
+```
+
+## Solução de Laplace
+```{r}
+lap = j$resolveLaplace()
+lap[c(1, 3)] 
+```
+
+## Mínimo Arrependimento de Savage
+
+```{r}
+mr = j$resolveMinRegret()
+mr
+```
+
+## Valor esperado da informação perfeita
+
+```{r}
+j$EVPI()
+```
+
+## Sensibilidade
+
+```{r}
+sens = j$sensibilidade(graf = TRUE)
+sens
+```
+
+Nota-se que a alternativa A2 só é interessante no intervalo de probabilidade de `r sens$viaveis[1]` a `r sens$viaveis[2]`.
+
+## Árvores de probabilidades
+
+Um jogo pode ser representado por uma árvore. Por questões técnicas, eu recriei o mesmo jogo duplicando a alternativa A2, ou seja A2 e A3 são iguais em um jogo de 4 alternativas. 
+
+```{r}
+j$montaJogo(c(1500, -800, 800, -400, 800, -400, 0, 0))
+j$m
+```
+
+### Árvore de Laplace
+
+A solução de Laplace fica
+
+```{r}
+j$plotSingleDecision(0.5)
+```
+
+### Árvore completa com total desconhecimento
+
+E a árvore completa para uma empresa de pesquisa que não sabe nada é
+
+```{r,fig.asp=1}
+j$plot(j$arvore(p = c(0.5, 0.5, 0.5), payoff = 0, posteriori = FALSE, dec = 2))
+```
+
+### Árvore completa com desconhecimento parcial 
+
+Imaginando que a empresa de pesquisa acerta 80% dos casos de mundo favorável e acerta 70% dos casos de mundo desfavorável, a árvore fica
+
+```{r,fig.asp=1}
+j$plot((arv1 = j$arvore(p = c(0.5, 0.8, 0.3), payoff = 0, posteriori = FALSE, dec = 2)))
+print(arv1[-8], na.print = "")
+```
+
+
+### Árvore completa com desconhecimento parcial e probabilidades *a posteriori*
+
+E, fazendo as contas do Reverendo Bayes, tem-se
+
+```{r,fig.asp=1}
+j$plot((arv2 = j$arvore(p = c(0.5, 0.8, 0.3), payoff = 0, posteriori = TRUE, dec = 2)))
+print(arv2[-8], na.print = "")
+```
